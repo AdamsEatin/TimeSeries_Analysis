@@ -197,9 +197,9 @@ def recursive_test(data, arima_Order, numOfPredictions):
             
             prdct = bias + float(model_fit.forecast()[0])
             
-            xList.append(prdct)
-            print("Prediction ",count," : ",prdct)
-            yList.append(prdct)
+            xList.append(prdct[0])
+            print("Prediction ",count," : ",prdct[0])
+            yList.append(prdct[0])
             
             count = count + 1
         
