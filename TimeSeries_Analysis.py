@@ -57,7 +57,6 @@ def evaluate_arima_model(X, arima_order):
     rmse = sqrt(mse)
     return rmse
 
-#TODO: Fix check for best config, best rmse, which values get returned.
 #Evaluate combinations of p, d, q values for the ARIMA model
 def evaluate_models(dataset, p_values, d_values, q_values):
     dataset = dataset.astype('float32')
@@ -76,7 +75,7 @@ def evaluate_models(dataset, p_values, d_values, q_values):
                     print('ARIMA ',order,' RMSE= ',mse)
                 except:
                     continue
-    print('Best Config: ',best_cfg, ' RMSE: ',mse)
+    print('Best Config: ',best_cfg, ' RMSE: ',best_score)
     return best_cfg
    
 #Evaluate Residual Error Bias
@@ -185,8 +184,47 @@ def generate_prediction(X, arima_Order):
     #xList = X.tolist()
     #xList.append(420.0)
     return
+
+#test function for recursive predictions
+def recursive_test(data, arima_Order, numOfPredictions):
     
+    def make_predictions(xList, yList, model, bias, numOfPredictions):
+        count = 0
+        
+        while count < numOfPredictions:
+            model = ARIMA(xList, arima_Order)
+            model_fit = model.fit(trend = 'nc', disp=0)
+            
+            prdct = bias + float(model_fit.forecast()[0])
+            
+            xList.append(prdct)
+            print("Prediction ",count," : ",prdct)
+            yList.append(prdct)
+            
+            count = count + 1
+        
+        return yList
     
+    X = data.values.astype('float32')
+    xList = X.tolist()
+    yList = []
+    model_fit = ARIMAResults.load('model.pkl')
+    bias = numpy.load('model_bias.npy')
+    
+    predictions = make_predictions(xList, yList, model_fit, bias, numOfPredictions)
+    
+    print("\n xList:")
+    print(xList)
+    print("\n yList:")
+    print(yList)
+    
+    pyplot.plot(xList, color = 'blue')
+    pyplot.plot(predictions, color = 'red')
+    pyplot.show()
+    
+    return
+
+
 #Original Dataset  
 data = Series.from_csv('SampleData1.csv', header=0)
 
@@ -195,6 +233,9 @@ X = Series.from_csv('dataset.csv')
 
 #Validation Dataset
 Y = Series.from_csv('validation.csv')
+
+#Number of predictions to be made
+numOfPredictions = 4
 
 p_Values = range(0,5)
 d_Values = range(0,3)
@@ -207,6 +248,8 @@ bias = evaluate_bias(X, arima_Order)
 
 generate_model(X, arima_Order, bias)
 
-validate_model(X, Y, arima_Order)
+#validate_model(X, Y, arima_Order)
 
 #generate_prediction(X, arima_Order)
+
+recursive_test(X, arima_Order, numOfPredictions)
