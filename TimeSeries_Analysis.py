@@ -166,25 +166,8 @@ def validate_model(X, Y, arima_Order):
     print('\nRMSE: ',rmse)
     return
 
-#Generate a prediction for the next year
-#TODO: ALlow for recursion to generate predictions for multiple years
-def generate_prediction(X, arima_Order):
-    X = X.values.astype('float32')
-    xList = X.tolist()
-    
-    model_fit = ARIMAResults.load('model.pkl')
-    bias = numpy.load('model_bias.npy')
-    
-    predictions = list()
-    yhat = bias + float(model_fit.forecast()[0])
-    predictions.append(yhat)
-    print(predictions)
-    
-    
-    #xList = X.tolist()
-    #xList.append(420.0)
-    return
 
+"""
 #test function for recursive predictions
 def recursive_test(data, arima_Order, numOfPredictions):
     
@@ -206,6 +189,7 @@ def recursive_test(data, arima_Order, numOfPredictions):
         return yList
     
     X = data.values.astype('float32')
+    orig = X.tolist()
     xList = X.tolist()
     yList = []
     model_fit = ARIMAResults.load('model.pkl')
@@ -217,13 +201,18 @@ def recursive_test(data, arima_Order, numOfPredictions):
     print(xList)
     print("\n yList:")
     print(yList)
+    print("\n orig:")
+    print(orig)
     
-    pyplot.plot(xList, color = 'blue')
-    pyplot.plot(predictions, color = 'red')
+    
+    
+    pyplot.plot(orig, color = 'blue')
+    
+    pyplot.plot(xList, color = 'red')
     pyplot.show()
     
     return
-
+"""
 
 #Original Dataset  
 data = Series.from_csv('SampleData1.csv', header=0)
@@ -235,7 +224,7 @@ X = Series.from_csv('dataset.csv')
 Y = Series.from_csv('validation.csv')
 
 #Number of predictions to be made
-numOfPredictions = 4
+numOfPredictions = 10
 
 p_Values = range(0,5)
 d_Values = range(0,3)
@@ -248,8 +237,8 @@ bias = evaluate_bias(X, arima_Order)
 
 generate_model(X, arima_Order, bias)
 
-#validate_model(X, Y, arima_Order)
+validate_model(X, Y, arima_Order)
 
-#generate_prediction(X, arima_Order)
+generate_prediction(X, arima_Order)
 
-recursive_test(X, arima_Order, numOfPredictions)
+#recursive_test(X, arima_Order, numOfPredictions)
