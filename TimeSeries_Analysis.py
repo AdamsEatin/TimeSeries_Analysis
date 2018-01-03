@@ -160,14 +160,80 @@ def validate_model(X, Y, arima_Order):
     mse = mean_squared_error(Y, predictions)
     rmse = sqrt(mse)
     
+    """
+    print("\n Validation X: ",X)
+    print("\n Validation Y: ",Y)
+    print("\n Validation History: ",history)
+    print("\n Validation Predictions: ",predictions)
+    """
+    
     pyplot.plot(Y)
     pyplot.plot(predictions, color='red')
     pyplot.show()
     print('\nRMSE: ',rmse)
     return
 
+#test function for recursive predictions
+def recursive_test1(data, arima_Order, numOfP):
+    
+    """def make_predictions(xList, yList, model, bias, numOfPredictions):
+        count = 0
+        
+        while count < numOfPredictions:
+            model = ARIMA(xList, arima_Order)
+            model_fit = model.fit(trend = 'nc', disp=0)
+            
+            prdct = bias + float(model_fit.forecast()[0])
+            
+            xList.append(prdct[0])
+            print("Prediction ",count," : ",prdct[0])
+            yList.append(prdct[0])
+            
+            count = count + 1
+        
+        return yList
+    """
+    
+    D = data.values.astype('float32')
+    history = [x for x in D]
+    
+    modelF = ARIMAResults.load('model.pkl')
+    biasF = numpy.load('model_bias.npy')
+    
+    #Make first prediction
+    predictions = []
+    predic = biasF + float(modelF.forecast()[0])
+    
+    print("\nRecursive Orig D: ",D)
+    print("\nRecursive Orig history: ",history)
+    
+    predictions.append(predic[0])
+    history.append(predic[0])
+    
+    count = 0
+    #Rolling forecasts
+    while count < numOfP:
+        #Make predictions
+        model = ARIMA(history, arima_Order)
+        model_fit = model.fit(trend='nc', disp=0)
+        predic = bias + float(model_fit.forecast()[0])
+        
+        predictions.append(predic)
+        history.append(predic)
+        
+        count = count + 1
+        
+    print("\nRecursive D: ",D)
+    print("\nRecursive history: ",history)
+    print("\nRecursive predictions: ",predictions)  
+    
+    pyplot.plot(D, color = 'blue')
+    pyplot.plot(predictions, color = 'red')
+    pyplot.show()
+    
+    return
 
-"""
+
 #test function for recursive predictions
 def recursive_test(data, arima_Order, numOfPredictions):
     
@@ -196,26 +262,25 @@ def recursive_test(data, arima_Order, numOfPredictions):
     bias = numpy.load('model_bias.npy')
     
     predictions = make_predictions(xList, yList, model_fit, bias, numOfPredictions)
-    
+    """
     print("\n xList:")
     print(xList)
     print("\n yList:")
     print(yList)
     print("\n orig:")
     print(orig)
-    
-    
+    """
     
     pyplot.plot(orig, color = 'blue')
-    
     pyplot.plot(xList, color = 'red')
+    #pyplot.plot(predictions, color = 'green')
     pyplot.show()
     
     return
-"""
+
 
 #Original Dataset  
-data = Series.from_csv('SampleData1.csv', header=0)
+data = Series.from_csv('SampleData.csv', header=0)
 
 #Training Dataset
 X = Series.from_csv('dataset.csv')
@@ -224,7 +289,7 @@ X = Series.from_csv('dataset.csv')
 Y = Series.from_csv('validation.csv')
 
 #Number of predictions to be made
-numOfPredictions = 10
+numOfPredictions = 4
 
 p_Values = range(0,5)
 d_Values = range(0,3)
@@ -239,6 +304,6 @@ generate_model(X, arima_Order, bias)
 
 validate_model(X, Y, arima_Order)
 
-generate_prediction(X, arima_Order)
+#recursive_test1(X, arima_Order, numOfPredictions)
 
-#recursive_test(X, arima_Order, numOfPredictions)
+recursive_test(X, arima_Order, numOfPredictions)
